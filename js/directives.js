@@ -15,3 +15,12 @@ app.directive('alert', function () {
         }
     };
 });
+
+app.directive('selectOnFocus', function () {
+    // Linker function
+    return function (scope, element, attrs) {
+        element.focus(function () {
+            element.select();
+        });
+    };
+});
