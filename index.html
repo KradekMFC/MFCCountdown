@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html ng-app="MFCCountdown">
+<head>
+    <title>MFC Countdown</title>
+
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+    <script src="js/shims.js"></script>
+    <script src="js/lib/jquery-1.9.1.min.js"></script>
+    <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
+    <script src="js/lib/ui-bootstrap-custom-tpls-0.3.0-SNAPSHOT.min.js"></script>
+</head>
+<body ng-controller="CountdownCtrl">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="brand">MFC Countdown <span ng-show="model != undefined">:: {{model.name}}</span></div>
+            <button class="btn" ng-click="showCountdownModal = true" ng-show="model != undefined && !countdownActive">Set Countdown</button>
+            <button class="btn" ng-show="modelSelected && countdownActive">Audit</button>
+            <button class="btn" ng-click="showSelectModel = true" >{{(model == undefined) && 'Select' || 'Change'}} Model</button>
+
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row-fluid">
+            <div class="span12">
+                <div ng-show="countDownDisplayText" class="hero-unit" style="font-size:100px; font-weight: bold; text-align: center">{{countDownDisplayText}}</div>
+            </div>
+        </div>
+    </div>
+
+    <div modal="showSelectModel" close="showSelectModel = false" options="opts" ng-cloak>
+        <div class="modal-header">
+            <h4>Enter Model name</h4>
+        </div>
+        <div class="modal-body">
+            <input type="text" ng-model="modelName" autofocus/>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary cancel" ng-click="selectModel()">Select</button>
+        </div>
+    </div>
+
+    <div modal="showCountdownModal" close="showCountdownModal = false" options="opts" ng-cloak>
+        <div class="modal-header">
+            <h4>Enter Countdown Amount</h4>
+        </div>
+        <div class="modal-body">
+            <input type="text" ng-model="countDownAmount" autofocus/>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary cancel" ng-click="setCountdown()">Set</button>
+        </div>
+    </div>
+
+    <script src="js/MFCCountdown.js"></script>
+    <script src="js/MFCEnum.js"></script>
+    <script src="js/MFCMessage.js"></script>
+    <script src="js/MFCSocket.js"></script>
+    <script src="js/directives.js"></script>
+    <script>
+
+
+        app.controller("CountdownCtrl", function CountdownCtrl($scope, Model, Countdown, Socket){
+            //set the model to a stored model if there is one
+            var model = Model.getModel();
+            if (model && model.name != undefined) {
+                $scope.modelName = model.name;
+                $scope.model = model;
+                lookupModel();
+            }
+
+            //select model modal stuff
+            $scope.showSelectModel = false;
+            $scope.selectModel = function() {
+                lookupModel();
+                Countdown.cancel();
+            };
+
+            function lookupModel(){
+                Model.lookupModel($scope.modelName).then(function(model){
+                    $scope.model = model;
+                    if (Countdown.active())
+                        $scope.countDownDisplayText = Countdown.current();
+                    else
+                        $scope.countDownDisplayText = null;
+                }, function(reason){
+                    addAlert("error", reason);
+                });
+                $scope.showSelectModel = false;
+            }
+
+            //countdown tracking
+            $scope.showCountdownModal = false;
+            if (Countdown.active())
+                $scope.countDownDisplayText = Countdown.current();
+            else
+                $scope.countDownDisplayText = null;
+
+            $scope.setCountdown = function(){
+                $scope.showCountdownModal = false;
+                Countdown.start(Model.getModel(), $scope.countDownAmount);
+                $scope.countDownDisplayText = $scope.countDownAmount;
+            };
+            $scope.$on("countDownUpdate", function(evt, amount){
+                $scope.$apply(function(){
+                    $scope.countDownDisplayText = amount;
+                });
+            });
+            $scope.$on("countDownComplete", function(){
+                $scope.$apply(function(){
+                    $scope.countDownDisplayText = "Complete!";
+                });
+            });
+
+
+            //alert stuff
+            $scope.alerts = [];
+            function addAlert(type, msg) {
+                $scope.alerts.push({type: type, msg: msg});
+            };
+            $scope.closeAlert = function(index) {
+                $scope.alerts.splice(index, 1);
+            };
+
+            Socket.listen("close", function(msg){
+                addAlert("error", msg);
+                console.log(msg);
+            });
+
+            Socket.listen("error", function(err){
+                addAlert("error", err);
+                console.log(err);
+            });
+        });
+
+        app.factory("Socket", function(){
+            return MFCSocket;
+        });
+
+        app.factory("Model", function($rootScope, $q, Socket){
+            var LOCAL_STORAGE_ID = "mfccModel",
+                 modelString = localStorage[LOCAL_STORAGE_ID];
+
+            var model = modelString ? JSON.parse(modelString) : {
+                name: undefined,
+                broadcasterId: undefined
+            };
+
+            $rootScope.$watch(function(){ return model;}, function(){
+                localStorage[LOCAL_STORAGE_ID] = JSON.stringify(model);
+            });
+
+            function modelLookupByName(modelName) {
+                var deferred =  $q.defer();
+
+                function scanUserLookup(msg) {
+                    //only process userlookups
+                    if (msg.Type !== MFCMessageType.FCTYPE_USERNAMELOOKUP)
+                        return;
+
+                    //we have a userlookup message, remove the listener
+                    Socket.removeListener("message", scanUserLookup);
+
+                    //check if the model was found
+                    if (1 == msg.Arg2){
+                        $rootScope.$apply(function(){
+                            deferred.reject("Could not find the model.");
+                        });
+                        return;
+                    }
+
+                    //model was found, check the video state
+                    if (MFCVideoState.FCVIDEO_TX_IDLE != msg.Data.vs){
+                        $rootScope.$apply(function(){
+                            deferred.reject("Model is not in public chat.");
+                        });
+                        return;
+                    }
+
+                    $rootScope.$apply(function(){
+                        model = {
+                            name: modelName,
+                            broadcasterId: 100000000 + parseInt(msg.Arg2, 10)
+                        };
+                        deferred.resolve(model);
+                    });
+                };
+
+                Socket.listen("message", scanUserLookup);
+
+                Socket.send(new MFCMessage({
+                    Type: MFCMessageType.FCTYPE_USERNAMELOOKUP,
+                    From: 0,
+                    To: 0,
+                    Arg1: 20,
+                    Arg2: 0,
+                    Data: modelName
+                }));
+
+                return deferred.promise;
+            }
+
+            return {
+                 getModel: function() {return model;},
+                 lookupModel: modelLookupByName
+            }
+        });
+        app.factory("Countdown", function($rootScope, Socket){
+            var LOCAL_STORAGE_ID = "mfccCountdown",
+                    countDownString = localStorage[LOCAL_STORAGE_ID];
+
+            var emptyCountdown = {
+                model: undefined,
+                tips:[],
+                amt: 0,
+                complete: true
+            };
+
+            var countDown = countDownString ? JSON.parse(countDownString) : emptyCountdown;
+
+            $rootScope.$watch(function(){ return countDown;}, function(){
+                localStorage[LOCAL_STORAGE_ID] = JSON.stringify(countDown);
+            }, true);
+
+            var tipRegex = /(\w*) has tipped (\w*) (\d*) tokens/;
+
+            //start up the countdown listener if there is an active
+            //countdown that isn't complete
+            if (undefined != countDown.complete && !countDown.complete)
+                listenForTips();
+
+            function currentTotal(){
+                return countDown.tips.reduce(function(total, tip){
+                    return total - tip.Amount;
+                }, countDown.amt);
+            }
+
+            function completeCountdown() {
+                countDown.complete = true;
+                Socket.removeListener("message", parseTips);
+                $rootScope.$broadcast("countDownComplete");
+            }
+
+            function cancelCountdown(){
+                countDown = emptyCountdown;
+                Socket.removeListener("message", parseTips);
+            }
+
+            function parseTips(msg){
+                if (msg.Type !== MFCMessageType.FCTYPE_CMESG)
+                    return;
+
+                //tips messages do not come from anybody
+                if (msg.Arg1 != 0 || msg.Arg2 != 0 || msg.From != 0 || msg.To != countDown.model.broadcasterId)
+                    return;
+
+                var tipMsg = msg.Data.msg;
+
+                var match = tipRegex.exec(tipMsg);
+                if (match){
+                    countDown.tips.push({Name: match[1], Amount: match[3]});
+
+                    if (currentTotal() < 0)
+                        completeCountdown();
+                    else
+                        $rootScope.$broadcast("countDownUpdate", currentTotal());
+                }
+
+            }
+
+            function listenForTips(){
+                if (!Socket.loggedIn()){
+                    setTimeout(listenForTips, 500);
+                    return;
+                }
+
+                Socket.listen("message", parseTips);
+                Socket.send(new MFCMessage({
+                    Type: MFCMessageType.FCTYPE_JOINCHAN,
+                    From: Socket.getSessionId(),
+                    To: 0,
+                    Arg1: countDown.model.broadcasterId,
+                    Arg2: MFCChatOpt.FCCHAN_JOIN
+                }));
+            }
+
+            function startCountdown(model, amount){
+                countDown = {
+                    amt: amount,
+                    model: model,
+                    tips: [],
+                    complete: false
+                };
+
+                listenForTips();
+            }
+
+            return {
+                start: startCountdown,
+                cancel: cancelCountdown,
+                resume: listenForTips,
+                active: function(){
+                    return !countDown.complete;
+                },
+                current: currentTotal
+           }
+
+        });
+    </script>
+</body>
+</html>
