@@ -4,6 +4,15 @@
     <title>MFC Countdown</title>
 
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+    <style type="text/css">
+        .css-form input.ng-invalid.ng-dirty {
+            background-color: #FA787E;
+        }
+
+        .css-form input.ng-valid.ng-dirty {
+            background-color: #78FA89;
+        }
+    </style>
     <script src="js/shims.js"></script>
     <script src="js/lib/jquery-1.9.1.min.js"></script>
     <script src="js/lib/angular.min.js"></script>
@@ -44,15 +53,17 @@
     </div>
 
     <div modal="showCountdownModal" close="showCountdownModal = false" options="opts" ng-cloak>
-        <div class="modal-header">
-            <h4>Enter Countdown Amount</h4>
-        </div>
-        <div class="modal-body">
-            <input type="text" ng-model="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}"/>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary cancel" ng-click="setCountdown()">Set</button>
-        </div>
+        <form name="formCountdown" novalidate class="css-form">
+            <div class="modal-header">
+                <h4>Enter Countdown Amount</h4>
+            </div>
+            <div class="modal-body">
+                <input type="number" min="1" required ng-model="countDownAmount" name="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}" select-on-focus/>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
+            </div>
+        </form>
     </div>
 
     <script src="js/MFCCountdown.js"></script>
@@ -101,6 +112,8 @@
                 $scope.countDownDisplayText = null;
 
             $scope.setCountdown = function(){
+                if ($scope.formCountdown.$invalid)
+                    return;
                 $scope.alerts = [];
                 $scope.showCountdownModal = false;
                 Countdown.start(Model.getModel(), $scope.countDownAmount);
@@ -169,7 +182,7 @@
                     //check if the model was found
                     if (1 == msg.Arg2){
                         $rootScope.$apply(function(){
-                            deferred.reject("Could not find the model.");
+                            deferred.reject("Could not find {0}.".format(modelName));
                         });
                         return;
                     }
@@ -177,7 +190,7 @@
                     //model was found, check the video state
                     if (MFCVideoState.FCVIDEO_TX_IDLE != msg.Data.vs){
                         $rootScope.$apply(function(){
-                            deferred.reject("Model is not in public chat.");
+                            deferred.reject("{0} is not in public chat.".format(modelName));
                         });
                         return;
                     }
