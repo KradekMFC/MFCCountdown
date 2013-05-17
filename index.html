@@ -27,6 +27,10 @@
             <button class="btn" ng-click="showCountdownModal = true" ng-show="model != undefined && !countdownActive">Set Countdown</button>
             <button class="btn" ng-show="modelSelected && countdownActive">Audit</button>
             <button class="btn" ng-click="showSelectModel = true" >{{(model == undefined) && 'Select' || 'Change'}} Model</button>
+            <div class="pull-right">
+                <button class="btn" ng-click="showAboutModal = true">About</button>
+            </div>
+
 
         </div>
     </div>
@@ -64,6 +68,42 @@
                 <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
             </div>
         </form>
+    </div>
+
+    <div modal="showAboutModal" close="showAboutModal = false" options="opts" ng-cloak>
+        <div class="modal-header">
+            <h4>About MFC Countdown</h4>
+        </div>
+        <div class="modal-body">
+            MFC Countdown assists with tracking countdowns in public rooms on myfreecams.com.
+            It works by logging into the selected model's public room as a guest and making
+            note of tips during the countdown.  Because it is logging in as a guest, <em>MFC Countdown
+            can only track public tips.</em>  Anonymous tips will be included (if they are also public),
+            but any tip not displayed in the public room of the model will not be counted.
+            <br/><br/>
+            Operation should be pretty simple.
+            <br/>
+            <ul>
+                <li>Select a model by entering her name after clicking <span class="label">Select/Change Model</span></li>
+                <li>Begin a countdown by entering an amount after clicking <span class="label">Set Countdown</span></li>
+            </ul>
+            MFC Countdown will display the amount remaining in the countdown until it is finished,
+            at which point, it will display that the countdown is complete.  The countdown can be
+            adjusted by entering selecting <span class="label">Set Countdown</span> again.
+            <br/><br/>
+            <strong>Planned enhancements:</strong>
+            <br/>
+            <ul>
+                <li>Display and allow removal of tips from the countdown (ie, the tip was intended for a video
+                and the model does not want it included in the total).
+                </li>
+                <li>Firefox support.</li>
+            </ul>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary cancel" ng-click="showAboutModal = false">Ok</button>
+        </div>
     </div>
 
     <script src="js/MFCCountdown.js"></script>
