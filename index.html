@@ -12,6 +12,15 @@
         .css-form input.ng-valid.ng-dirty {
             background-color: #78FA89;
         }
+        th
+        {
+            font-size:larger;
+            text-align:center !important;
+            background-color: #eaeaea;
+            background-image: -moz-linear-gradient(#fafafa, #eaeaea);
+            background-image: -webkit-linear-gradient(#fafafa, #eaeaea);
+            background-image: linear-gradient(#fafafa, #eaeaea);
+        }
     </style>
     <script src="js/shims.js"></script>
     <script src="js/lib/jquery-1.9.1.min.js"></script>
@@ -25,14 +34,12 @@
         <div class="navbar-inner">
             <div class="brand">MFC Countdown <span ng-show="model != undefined">:: {{model.name}}</span></div>
             <button class="btn" ng-click="showCountdownModal = true" ng-show="model != undefined && !countdownActive">Set Countdown</button>
-            <button class="btn" ng-show="modelSelected && countdownActive">Audit</button>
+            <button class="btn" ng-click="showTipsModal = true" ng-show="tips.length > 0">Tips</button>
             <button class="btn" ng-click="showSelectModel = true" >{{(model == undefined) && 'Select' || 'Change'}} Model</button>
             <div class="pull-right">
                 <button class="btn" ng-click="showAboutModal = true">About</button>
             </div>
-
-
-        </div>
+       </div>
     </div>
 
     <div class="container-fluid">
@@ -70,6 +77,34 @@
         </form>
     </div>
 
+    <div modal="showTipsModal" close="showTipsModal = false" options="opts" ng-cloak>
+        <div class="modal-header">
+            <div class="form-inline">
+                Filter by Name: <input type="text" ng-model="search.Name" class="input-medium"/>
+                By Amount: <input type="text" ng-model="search.Amount" class="input-medium"/>
+            </div>
+        </div>
+        <div class="modal-body">
+            <table class="table table-condensed table-bordered">
+                <tr>
+                    <th></th>
+                    <th style="text-align:center">From</th>
+                    <th style="text-align:center">Amount</th>
+                    <th style="text-align:center">Countdown After Tip</th>
+                </tr>
+                <tr ng-repeat="tip in tips | filter: search">
+                    <td style="text-align:center"><button class="btn btn-mini btn-danger" ng-click="removeTip(tip)"><icon class="icon icon-white icon-remove"></icon></button></td>
+                    <td>{{tip.Name}}</td>
+                    <td style="text-align:center">{{tip.Amount}}</td>
+                    <td style="text-align:center">{{runningTotal($index)}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary cancel" ng-click="showTipsModal = false">OK</button>
+        </div>
+    </div>
+
     <div modal="showAboutModal" close="showAboutModal = false" options="opts" ng-cloak>
         <div class="modal-header">
             <h4>About MFC Countdown</h4>
@@ -94,9 +129,6 @@
             <strong>Planned enhancements:</strong>
             <br/>
             <ul>
-                <li>Display and allow removal of tips from the countdown (ie, the tip was intended for a video
-                and the model does not want it included in the total).
-                </li>
                 <li>Firefox support.</li>
             </ul>
 
@@ -134,10 +166,7 @@
             function lookupModel(){
                 Model.lookupModel($scope.modelName).then(function(model){
                     $scope.model = model;
-                    if (Countdown.active())
-                        $scope.countDownDisplayText = Countdown.current();
-                    else
-                        $scope.countDownDisplayText = null;
+                    updateCountdownDisplay();
                 }, function(reason){
                     addAlert("error", reason);
                 });
@@ -146,10 +175,6 @@
 
             //countdown tracking
             $scope.showCountdownModal = false;
-            if (Countdown.active())
-                $scope.countDownDisplayText = Countdown.current();
-            else
-                $scope.countDownDisplayText = null;
 
             $scope.setCountdown = function(){
                 if ($scope.formCountdown.$invalid)
@@ -157,18 +182,41 @@
                 $scope.alerts = [];
                 $scope.showCountdownModal = false;
                 Countdown.start(Model.getModel(), $scope.countDownAmount);
-                $scope.countDownDisplayText = $scope.countDownAmount;
+                updateCountdownDisplay();
+
             };
-            $scope.$on("countDownUpdate", function(evt, amount){
-                $scope.$apply(function(){
-                    $scope.countDownDisplayText = amount;
-                });
-            });
-            $scope.$on("countDownComplete", function(){
-                $scope.$apply(function(){
-                    $scope.countDownDisplayText = "Complete!";
-                });
-            });
+
+            function updateCountdownDisplay(){
+                if (Countdown.active() && Countdown.current() > 0)
+                    $scope.countDownDisplayText = Countdown.current();
+                else
+                    if (Countdown.amount() > 0)
+                        $scope.countDownDisplayText = "Complete!";
+                    else
+                        $scope.countDownDisplayText = "";
+            }
+
+
+            $scope.$watch(function(){return Countdown.tips();}, function(tips){
+                $scope.tips = tips;
+
+                updateCountdownDisplay();
+            }, true);
+
+
+            //This is probably not the best way to do this,
+            //calculating the sum every single tip, but its
+            //working for now.
+            $scope.runningTotal = function(index){
+                var t = $scope.tips.slice(0, index + 1).reduce(function(total, tip){
+                    return total + parseInt(tip.Amount,10);
+                },0);
+                return Countdown.amount() - t;
+            };
+
+            $scope.removeTip = function(tip){
+                Countdown.removeTip(tip);
+            };
 
 
             //alert stuff
@@ -194,7 +242,6 @@
         app.factory("Socket", function(){
             return MFCSocket;
         });
-
         app.factory("Model", function($rootScope, $q, Socket){
             var LOCAL_STORAGE_ID = "mfccModel",
                  modelString = localStorage[LOCAL_STORAGE_ID];
@@ -296,7 +343,6 @@
             function completeCountdown() {
                 countDown.complete = true;
                 Socket.removeListener("message", parseTips);
-                $rootScope.$broadcast("countDownComplete");
             }
 
             function cancelCountdown(){
@@ -316,14 +362,13 @@
 
                 var match = tipRegex.exec(tipMsg);
                 if (match){
-                    countDown.tips.push({Name: match[1], Amount: match[3]});
+                    $rootScope.$apply(function(){
+                        countDown.tips.push({Name: match[1], Amount: match[3]});
+                    });
 
                     if (currentTotal() < 0)
                         completeCountdown();
-                    else
-                        $rootScope.$broadcast("countDownUpdate", currentTotal());
                 }
-
             }
 
             function listenForTips(){
@@ -353,6 +398,12 @@
                 listenForTips();
             }
 
+            function removeTip(tip){
+                countDown.tips.splice(countDown.tips.indexOf(tip), 1);
+                if (currentTotal() < countDown.amt)
+                    countDown.complete = false;
+            }
+
             return {
                 start: startCountdown,
                 cancel: cancelCountdown,
@@ -360,7 +411,14 @@
                 active: function(){
                     return !countDown.complete;
                 },
-                current: currentTotal
+                current: currentTotal,
+                tips: function(){
+                    return countDown.tips;
+                },
+                amount: function(){
+                    return countDown.amt;
+                },
+                removeTip: removeTip
            }
 
         });
