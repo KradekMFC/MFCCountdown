@@ -52,6 +52,7 @@
         </div>
     </div>
 
+    <!-- Select Model Modal -->
     <div modal="showSelectModel" close="showSelectModel = false" options="opts" ng-cloak>
         <div class="modal-header">
             <h4>Enter Model name</h4>
@@ -63,21 +64,26 @@
             <button class="btn btn-primary cancel" ng-click="selectModel()">Select</button>
         </div>
     </div>
+    <!-- End Select Model Modal -->
 
-    <div modal="showCountdownModal" close="showCountdownModal = false" options="opts" ng-cloak>
-        <form name="formCountdown" novalidate class="css-form">
-            <div class="modal-header">
-                <h4>Enter Countdown Amount</h4>
-            </div>
-            <div class="modal-body">
-                <input type="number" min="1" required ng-model="countDownAmount" name="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}" select-on-focus/>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
-            </div>
-        </form>
-    </div>
+    <!-- Enter Countdown Amount Modal -->
+    <form name="formCountdown" novalidate class="css-form">
+        <div modal="showCountdownModal" close="showCountdownModal = false" options="opts" ng-cloak>
+                <div class="modal-header">
+                    <h4>Enter Countdown Amount</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="number" min="1" required ng-model="countDownAmount" name="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}" select-on-focus/>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
+                </div>
 
+        </div>
+    </form>
+    <!-- End Enter Countdown Amount Modal -->
+
+    <!--Show Tips Modal -->
     <div modal="showTipsModal" close="showTipsModal = false" options="opts" ng-cloak>
         <div class="modal-header">
             <div class="form-inline">
@@ -105,7 +111,9 @@
             <button class="btn btn-primary cancel" ng-click="showTipsModal = false">OK</button>
         </div>
     </div>
+    <!-- End Show Tips Modal -->
 
+    <!-- About Modal -->
     <div modal="showAboutModal" close="showAboutModal = false" options="opts" ng-cloak>
         <div class="modal-header">
             <h4>About MFC Countdown</h4>
@@ -139,6 +147,7 @@
             <button class="btn btn-primary cancel" ng-click="showAboutModal = false">Ok</button>
         </div>
     </div>
+    <!-- End About Modal -->
 
     <script src="js/MFCCountdown.js"></script>
     <script src="js/MFCEnum.js"></script>
