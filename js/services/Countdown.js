@@ -17,7 +17,7 @@ app.factory("Countdown", function($rootScope, Socket){
         localStorage[LOCAL_STORAGE_ID] = JSON.stringify(countDown);
     }, true);
 
-    var tipRegex = /(\w*) has tipped (\w*) (\d*) tokens/;
+    var tipRegex = /(\w*) has tipped (\w*) (\d*) tokens?(.*)/;
 
     //start up the countdown listener if there is an active
     //countdown that isn't complete
@@ -52,8 +52,21 @@ app.factory("Countdown", function($rootScope, Socket){
 
         var match = tipRegex.exec(tipMsg);
         if (match){
+            var tipNote = "";
+            if (match.length == 5 && match[4] != ".")
+                tipNote = match[4].substring(3, match[4].length - 1);
+
+            var tip = {
+                Name: match[1],
+                Amount: match[3],
+                TipNote: tipNote,
+                When: new Date()
+            };
+
             $rootScope.$apply(function(){
-                countDown.tips.push({Name: match[1], Amount: match[3]});
+                countDown.tips.push(tip);
+                console.log(tip);
+
             });
 
             if (currentTotal() < 0)

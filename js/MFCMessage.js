@@ -14,27 +14,42 @@ function MFCMessage(initializer){
             initializer = initializer.substring(delimiterPos + 1)
         });
 
+        //convert Type to an int
+        self.Type = parseInt(self.Type,10);
+
         //parse out data if there is any
-        if (initializer.length > 0)
+        if (initializer.length > 0){
 
             if (self.Type != MFCMessageType.FCTYPE_LOGIN) {
-                var parsed;
-                try {
-                    //parsed = JSON.parse(initializer.replace(/%22/g,"\""));
-                    parsed = JSON.parse(decodeURIComponent(initializer));
-                }
-                catch(err){
-                    console.log(err);
-                    console.log(initializer);
-                }
+                var jsonPayload = [
+                    MFCMessageType.FCTYPE_DETAILS,
+                    MFCMessageType.FCTYPE_ADDFRIEND,
+                    MFCMessageType.FCTYPE_ADDIGNORE,
+                    MFCMessageType.FCTYPE_SESSIONSTATE,
+                    MFCMessageType.FCTYPE_CMESG,
+                    MFCMessageType.FCTYPE_PMESG,
+                    MFCMessageType.FCTYPE_TXPROFILE,
+                    MFCMessageType.FCTYPE_USERNAMELOOKUP,
+                    MFCMessageType.FCTYPE_MYCAMSTATE,
+                    MFCMessageType.FCTYPE_SETGUESTNAME,
+                ];
 
-                self.Data = parsed;
+                if (jsonPayload.indexOf(self.Type) != -1 ||
+                    (self.Type == MFCMessageType.FCTYPE_JOINCHAN && self.Arg2 == MFCMessageType.FCCHAN_PART)) {
+                    var parsed;
+                    try {
+                        parsed = JSON.parse(unescape(initializer));
+                    }
+                    catch(err){
+                        console.log(err);
+                        console.log(initializer);
+                    }
+                    self.Data = parsed;
+                }
             }
             else
                 self.Data = initializer;
-
-        //convert Type to an int
-        self.Type = parseInt(self.Type,10);
+        }
     }
 
     if ("object" === typeof(initializer)){
