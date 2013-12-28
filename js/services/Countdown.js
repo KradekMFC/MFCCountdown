@@ -41,25 +41,28 @@ app.factory("Countdown", function($rootScope, Socket){
     }
 
     function parseTips(msg){
-        if (msg.Type !== MFCMessageType.FCTYPE_CMESG)
+        if (msg.Type !== MFCMessageType.FCTYPE_TOKENINC)
+            return;
+
+        if (!msg.Data)
             return;
 
         //tips messages do not come from anybody
-        if (msg.Arg1 != 0 || msg.Arg2 != 0 || msg.From != 0 || msg.To != countDown.model.broadcasterId)
-            return;
+//        if (msg.Arg1 != 0 || msg.Arg2 != 0 || msg.From != 0 || msg.To != countDown.model.broadcasterId)
+//            return;
 
-        var tipMsg = msg.Data.msg;
-
-        var match = tipRegex.exec(tipMsg);
-        if (match){
-            var tipNote = "";
-            if (match.length == 5 && match[4] != ".")
-                tipNote = match[4].substring(3, match[4].length - 1);
+//        var tipMsg = msg.Data.msg;
+//
+//        var match = tipRegex.exec(tipMsg);
+//        if (match){
+//            var tipNote = "";
+//            if (match.length == 5 && match[4] != ".")
+//                tipNote = match[4].substring(3, match[4].length - 1);
 
             var tip = {
-                Name: match[1],
-                Amount: match[3],
-                TipNote: tipNote,
+                Name: msg.Data.u[2],
+                Amount: msg.Data.tokens,
+                TipNote: msg.Data.msg,
                 When: new Date()
             };
 
@@ -71,7 +74,7 @@ app.factory("Countdown", function($rootScope, Socket){
 
             if (currentTotal() < 0)
                 completeCountdown();
-        }
+        //}
     }
 
     function listenForTips(){

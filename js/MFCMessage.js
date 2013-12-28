@@ -32,6 +32,7 @@ function MFCMessage(initializer){
                     MFCMessageType.FCTYPE_USERNAMELOOKUP,
                     MFCMessageType.FCTYPE_MYCAMSTATE,
                     MFCMessageType.FCTYPE_SETGUESTNAME,
+                    MFCMessageType.FCTYPE_TOKENINC
                 ];
 
                 if (jsonPayload.indexOf(self.Type) != -1 ||
