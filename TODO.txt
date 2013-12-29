@@ -1,5 +1,0 @@
-fix parsing errors
-add ability to set purchase amounts for exclusion
-firefox sockets
-countdown calculator
-    x number of x amount tips, etc
