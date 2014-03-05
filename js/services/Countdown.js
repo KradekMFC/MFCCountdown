@@ -1,6 +1,6 @@
 "use strict";
 
-app.factory("Countdown", function($rootScope, Socket){
+app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
     var LOCAL_STORAGE_ID = "mfccCountdown",
         countDownString = localStorage[LOCAL_STORAGE_ID];
 
@@ -100,6 +100,8 @@ app.factory("Countdown", function($rootScope, Socket){
             tips: [],
             complete: false
         };
+
+        FBCountdowns.$add(countDown);
 
         listenForTips();
     }
