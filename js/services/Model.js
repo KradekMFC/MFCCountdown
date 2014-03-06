@@ -33,20 +33,23 @@ app.factory("Model", function($rootScope, $q, Socket){
             }
 
             //model was found, check the video state
-            if (MFCVideoState.FCVIDEO_TX_IDLE != msg.Data.vs){
+            if (MFCVideoState.FCVIDEO_TX_IDLE == msg.Data.vs || MFCVideoState.FCVIDEO_RX_IDLE == msg.Data.vs){
+                //model is in public, resolve positively
                 $rootScope.$apply(function(){
-                    deferred.reject("{0} is not in public chat.".format(modelName));
+                    model = {
+                        name: modelName,
+                        broadcasterId: 100000000 + parseInt(msg.Arg2, 10)
+                    };
+                    deferred.resolve(model);
                 });
                 return;
             }
 
+            //model was not in public
             $rootScope.$apply(function(){
-                model = {
-                    name: modelName,
-                    broadcasterId: 100000000 + parseInt(msg.Arg2, 10)
-                };
-                deferred.resolve(model);
+                deferred.reject("{0} is not in public chat.".format(modelName));
             });
+
         };
 
         Socket.listen("message", scanUserLookup);
