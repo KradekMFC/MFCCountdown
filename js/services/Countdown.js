@@ -32,6 +32,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
 
     function completeCountdown() {
         countDown.complete = true;
+        FBCountdowns.$child(countDown.fb_id).$update({complete: true});
         Socket.removeListener("message", parseTips);
     }
 
@@ -45,6 +46,10 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             return;
 
         if (!msg.Data)
+            return;
+
+        //make sure the tip is for the currently selected model
+        if (msg.Data.ch != countDown.model.broadcasterId)
             return;
 
         //tips messages do not come from anybody
@@ -68,9 +73,9 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
 
             $rootScope.$apply(function(){
                 countDown.tips.push(tip);
-                console.log(tip);
-
             });
+
+            FBCountdowns.$child(countDown.fb_id).$update({currentTotal: currentTotal()});
 
             if (currentTotal() < 0)
                 completeCountdown();
@@ -101,7 +106,9 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             complete: false
         };
 
-        FBCountdowns.$add(countDown);
+        FBCountdowns.$add(countDown).then(function(ref){
+            countDown.fb_id = ref.name();
+        });
 
         listenForTips();
     }
