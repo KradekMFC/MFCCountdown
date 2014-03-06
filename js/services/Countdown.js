@@ -17,6 +17,25 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
         localStorage[LOCAL_STORAGE_ID] = JSON.stringify(countDown);
     }, true);
 
+    function uniqueid(){
+        // always start with a letter (for DOM friendlyness)
+        var idstr=String.fromCharCode(Math.floor((Math.random()*25)+65));
+        do {
+            // between numbers and characters (48 is 0 and 90 is Z (42-48 = 90)
+            var ascicode=Math.floor((Math.random()*42)+48);
+            if (ascicode<58 || ascicode>64){
+                // exclude all chars between : (58) and @ (64)
+                idstr+=String.fromCharCode(ascicode);
+            }
+        } while (idstr.length<32);
+
+        return (idstr);
+    }
+
+    if (!localStorage["mfccUserId"])
+        localStorage["mfccUserId"] = uniqueid();
+    var uniqueUserId = localStorage["mfccUserId"];
+
     var tipRegex = /(\w*) has tipped (\w*) (\d*) tokens?(.*)/;
 
     //start up the countdown listener if there is an active
@@ -103,7 +122,8 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             amt: amount,
             model: model,
             tips: [],
-            complete: false
+            complete: false,
+            userId : uniqueUserId
         };
 
         FBCountdowns.$add(countDown).then(function(ref){
