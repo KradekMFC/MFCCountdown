@@ -96,7 +96,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
 
             FBCountdowns.$child(countDown.fb_id).$update({currentTotal: currentTotal()});
 
-            if (currentTotal() < 0)
+            if (currentTotal() <= 0)
                 completeCountdown();
         //}
     }
