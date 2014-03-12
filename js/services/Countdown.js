@@ -17,24 +17,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
         localStorage[LOCAL_STORAGE_ID] = JSON.stringify(countDown);
     }, true);
 
-    function uniqueid(){
-        // always start with a letter (for DOM friendlyness)
-        var idstr=String.fromCharCode(Math.floor((Math.random()*25)+65));
-        do {
-            // between numbers and characters (48 is 0 and 90 is Z (42-48 = 90)
-            var ascicode=Math.floor((Math.random()*42)+48);
-            if (ascicode<58 || ascicode>64){
-                // exclude all chars between : (58) and @ (64)
-                idstr+=String.fromCharCode(ascicode);
-            }
-        } while (idstr.length<32);
-
-        return (idstr);
-    }
-
-    if (!localStorage["mfccUserId"])
-        localStorage["mfccUserId"] = uniqueid();
-    var uniqueUserId = localStorage["mfccUserId"];
+    var uniqueUserId = $rootScope.userId;
 
     var tipRegex = /(\w*) has tipped (\w*) (\d*) tokens?(.*)/;
 
@@ -51,7 +34,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
 
     function completeCountdown() {
         countDown.complete = true;
-        FBCountdowns.$child(countDown.fb_id).$update({complete: true});
+        FBCountdowns.$child(countDown.fb_id).$update({complete: true, completed: new Date().getTime()});
         Socket.removeListener("message", parseTips);
     }
 
@@ -123,7 +106,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             model: model,
             tips: [],
             complete: false,
-            userId : uniqueUserId
+            created: new Date().getTime()
         };
 
         FBCountdowns.$add(countDown).then(function(ref){
