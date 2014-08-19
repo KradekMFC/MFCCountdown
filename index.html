@@ -38,11 +38,11 @@
             <div class="brand">MFC Countdown <span ng-show="model != undefined">:: {{model.name}}</span></div>
             <button class="btn" ng-click="showCountdownModal = true" ng-show="model != undefined && !countdownActive">Set Countdown</button>
             <button class="btn" ng-click="showTipsModal = true" ng-show="tips.length > 0">Tips</button>
-            <button class="btn" ng-click="showSelectModel = true" >{{(model == undefined) && 'Select' || 'Change'}} Model</button>
+            <button class="btn" ng-click="showSelectModel = true">{{(model == undefined) && 'Select' || 'Change'}} Model</button>
             <div class="pull-right">
                 <button class="btn" ng-click="showAboutModal = true">About</button>
             </div>
-       </div>
+        </div>
     </div>
 
     <div class="container-fluid">
@@ -55,24 +55,17 @@
         <div class="row-fluid">
             <div class="span12">
                 <div class="alert alert-info">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  <h4>Update! March 10, 2014</h4>
-                  <p>
-                      I'm pretty happy that something I threw together as an experiment is seeing so much use. In the last week, for example, 106 users have started 581 countdowns for 90 different models. That's great!</p>
-                  <p>
-                      I fixed a few bugs I noticed were occurring, and if you know of any additional bugs, please let me know <a href="https://github.com/KradekMFC/MFCCountdown/issues">here.</a>
-                      If you do not want to sign up for GitHub, you can alternatively e-mail me at kradekmfc@gmail.com.
-                  </p>
-                  <p>
-                      My main effort, however, will be going toward the next version. I'll be giving the site a facelift and adding some new features. I'll be adding the ability to track multiple countdowns
-                      for the same or different models at the same time, and I'll probably be adding a new type of summary which just tracks tips since a lot of users are obviously using the current countdown
-                      tracking for that purpose (creating a huge countdown that will obviously never be reached). Additionally I will probably be adding the ability to post the count to the models room using
-                      an MFC account username you provide.
-                  </p>
-                  <p>
-                      No promises when these upgrades will be coming; I'm just working on this in my spare time. Thanks for using MFC Countdown!
-                  </p>
-
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <h4>Update! August 19 2014</h4>
+                    <p>
+                        Been a while since the last update, and, as usual, real life throws curveballs so I haven't updated the site as planned. Still seeing a lot of use
+                        though so I may put some effort into it soon. Sincethe beginning of March, 2,587 different users have tracked over 32k countdowns for 976 different
+                        models. Awesome!
+                    </p>
+                    <p>
+                        If you know of any bugs, please let me know <a href="https://github.com/KradekMFC/MFCCountdown/issues">here.</a>
+                        If you do not want to sign up for GitHub, you can alternatively e-mail me at kradekmfc@gmail.com.
+                    </p>
                 </div>
             </div>
         </div>
@@ -84,37 +77,35 @@
             <h4>Enter Model name</h4>
         </div>
         <div class="modal-body">
-            <input type="text" ng-model="modelName" autofocus ui-keypress="{13:'selectModel()'}" select-on-focus/>
+            <input type="text" ng-model="modelName" autofocus ui-keypress="{13:'selectModel()'}" select-on-focus />
         </div>
         <div class="modal-footer">
             <button class="btn btn-primary cancel" ng-click="selectModel()">Select</button>
         </div>
     </div>
     <!-- End Select Model Modal -->
-
     <!-- Enter Countdown Amount Modal -->
     <form name="formCountdown" novalidate class="css-form">
         <div modal="showCountdownModal" close="showCountdownModal = false" options="opts" ng-cloak>
-                <div class="modal-header">
-                    <h4>Enter Countdown Amount</h4>
-                </div>
-                <div class="modal-body">
-                    <input type="number" min="1" required ng-model="countDownAmount" name="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}" select-on-focus/>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
-                </div>
+            <div class="modal-header">
+                <h4>Enter Countdown Amount</h4>
+            </div>
+            <div class="modal-body">
+                <input type="number" min="1" required ng-model="countDownAmount" name="countDownAmount" autofocus ui-keypress="{13:'setCountdown()'}" select-on-focus />
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary cancel" ng-disabled="formCountdown.$invalid" ng-click="setCountdown()">Set</button>
+            </div>
 
         </div>
     </form>
     <!-- End Enter Countdown Amount Modal -->
-
     <!--Show Tips Modal -->
     <div modal="showTipsModal" close="showTipsModal = false" options="opts" ng-cloak>
         <div class="modal-header">
             <div class="form-inline">
-                Filter by Name: <input type="text" ng-model="search.Name" class="input-medium"/>
-                By Amount: <input type="text" ng-model="search.Amount" class="input-medium"/>
+                Filter by Name: <input type="text" ng-model="search.Name" class="input-medium" />
+                By Amount: <input type="text" ng-model="search.Amount" class="input-medium" />
             </div>
         </div>
         <div class="modal-body">
@@ -138,7 +129,6 @@
         </div>
     </div>
     <!-- End Show Tips Modal -->
-
     <!-- About Modal -->
     <div modal="showAboutModal" close="showAboutModal = false" options="opts" ng-cloak>
         <div class="modal-header">
@@ -147,12 +137,14 @@
         <div class="modal-body">
             MFC Countdown assists with tracking countdowns in public rooms on myfreecams.com.
             It works by logging into the selected model's public room as a guest and making
-            note of tips during the countdown.  Because it is logging in as a guest, <em>MFC Countdown
-            can only track public tips.</em>  Anonymous tips will be included (if they are also public),
+            note of tips during the countdown.  Because it is logging in as a guest, <em>
+                MFC Countdown
+                can only track public tips.
+            </em>  Anonymous tips will be included (if they are also public),
             but any tip not displayed in the public room of the model will not be counted.
-            <br/><br/>
+            <br /><br />
             Operation should be pretty simple.
-            <br/>
+            <br />
             <ul>
                 <li>Select a model by entering her name after clicking <span class="label">Select/Change Model</span></li>
                 <li>Begin a countdown by entering an amount after clicking <span class="label">Set Countdown</span></li>
@@ -177,15 +169,17 @@
     <script src="js/services/Model.js"></script>
     <script src="js/services/Countdown.js"></script>
     <script src="js/controllers/CountdownController.js"></script>
-	<script>
-	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-	  ga('create', 'UA-41000422-1', 'azurewebsites.net');
-	  ga('send', 'pageview');
+        ga('create', 'UA-41000422-1', 'azurewebsites.net');
+        ga('send', 'pageview');
 
-	</script>
+    </script>
 </body>
 </html>
