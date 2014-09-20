@@ -43,7 +43,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
         Socket.removeListener("message", parseTips);
     }
 
-    function parseTips(msg){
+    function parseTips(msg) {
         if (msg.Type !== MFCMessageType.FCTYPE_TOKENINC)
             return;
 
@@ -98,6 +98,8 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             Arg1: countDown.model.broadcasterId,
             Arg2: MFCChatOpt.FCCHAN_JOIN
         }));
+
+
     }
 
     function startCountdown(model, amount){

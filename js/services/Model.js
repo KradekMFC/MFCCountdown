@@ -38,7 +38,7 @@ app.factory("Model", function($rootScope, $q, Socket){
                 $rootScope.$apply(function(){
                     model = {
                         name: modelName,
-                        broadcasterId: 100000000 + parseInt(msg.Arg2, 10)
+                        broadcasterId: 100000000 + parseInt(msg.From, 10)
                     };
                     deferred.resolve(model);
                 });
