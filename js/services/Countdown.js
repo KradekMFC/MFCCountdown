@@ -1,6 +1,6 @@
 "use strict";
 
-app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
+app.factory("Countdown", function($rootScope, Socket){
     var LOCAL_STORAGE_ID = "mfccCountdown",
         countDownString = localStorage[LOCAL_STORAGE_ID];
 
@@ -34,7 +34,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
 
     function completeCountdown() {
         countDown.complete = true;
-        FBCountdowns.$child(countDown.fb_id).$update({complete: true, completed: new Date().getTime()});
+        // FBCountdowns.$child(countDown.fb_id).$update({complete: true, completed: new Date().getTime()});
         Socket.removeListener("message", parseTips);
     }
 
@@ -77,7 +77,7 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
                 countDown.tips.push(tip);
             });
 
-            FBCountdowns.$child(countDown.fb_id).$update({currentTotal: currentTotal()});
+            // FBCountdowns.$child(countDown.fb_id).$update({currentTotal: currentTotal()});
 
             if (currentTotal() <= 0)
                 completeCountdown();
@@ -111,9 +111,9 @@ app.factory("Countdown", function($rootScope, Socket, FBCountdowns){
             created: new Date().getTime()
         };
 
-        FBCountdowns.$add(countDown).then(function(ref){
-            countDown.fb_id = ref.name();
-        });
+        // FBCountdowns.$add(countDown).then(function(ref){
+        //     countDown.fb_id = ref.name();
+        // });
 
         listenForTips();
     }

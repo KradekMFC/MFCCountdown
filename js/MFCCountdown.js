@@ -1,8 +1,7 @@
 "use strict";
 
-var app = angular.module("MFCCountdown",['ui.bootstrap', 'ui.keypress', 'firebase']);
+var app = angular.module("MFCCountdown",['ui.bootstrap', 'ui.keypress']);
 
-app.value('fbURL', 'https://tipbot.firebaseio.com/mfccountdown/users');
 
 app.run(function($rootScope){
     function uniqueid(){
@@ -27,11 +26,11 @@ app.run(function($rootScope){
 });
 
 
-app.factory('FBCountdowns', function($firebase, $rootScope) {
-  var fbUrl = 'https://tipbot.firebaseio.com/mfccountdown/users/' + $rootScope.userId;
+// app.factory('FBCountdowns', function($firebase, $rootScope) {
+//   var fbUrl = 'https://tipbot.firebaseio.com/mfccountdown/users/' + $rootScope.userId;
 
-  return $firebase(new Firebase(fbUrl));
-});
+//   return $firebase(new Firebase(fbUrl));
+// });
 
 //wrap MFCSocket as an injectable service
 app.factory("Socket", function(){
